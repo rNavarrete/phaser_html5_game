@@ -18,16 +18,31 @@ BasicGame.Game.prototype = {
     this.enemy.animations.add('fly', [0, 1, 2], 20, true);
     this.enemy.play('fly');
     this.enemy.anchor.setTo(0.5, 0.5);
+    this.physics.enable(this.enemy, Phaser.Physics.ARCADE);
 
     this.bullet = this.add.sprite(400, 400, 'bullet');
     this.bullet.anchor.setTo(0.5, 0.5);
+    this.physics.enable(this.bullet, Phaser.Physics.ARCADE);
+    this.bullet.body.velocity.y = -500;
+
 
   },
-
   update: function () {
     //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
     this.sea.tilePosition.y += 0.2;
-    this.bullet.y -=1;
+    this.physics.arcade.overlap(
+      this.bullet, this.enemy, this.enemyHit, null, this
+      );
+  },
+
+  enemyHit: function (bullet, enemy) {
+    bullet.kill();
+    enemy.kill();
+  },
+
+  render: function() {
+    this.game.debug.body(this.bullet);
+    this.game.debug.body(this.enemy);
   },
 
   quitGame: function (pointer) {
