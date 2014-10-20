@@ -7,7 +7,7 @@ BasicGame.Game.prototype = {
 
   preload: function () {
     this.load.image('sea','assets/sea.png');
-    this.load.image('bullet', 'assets/bullet');
+    this.load.image('bullet', 'assets/bullet.png');
     this.load.spritesheet('greenEnemy', 'assets/enemy.png', 32, 32);
   },
 
@@ -26,6 +26,7 @@ BasicGame.Game.prototype = {
 
   update: function () {
     //  Honestly, just about anything could go here. It's YOUR game after all. Eat your heart out!
+    this.sea.tilePosition.y += 0.2;
   },
 
   quitGame: function (pointer) {
