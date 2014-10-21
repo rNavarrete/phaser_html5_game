@@ -44,7 +44,7 @@ BasicGame.Game.prototype = {
       this.nextEnemyAt = this.time.now + this.enemyDelay;
       var enemy = this.enemyPool.getFirstExists(false);
       enemy.reset(this.rnd.integerInRange(20, this.game.width - 20), 0);
-      enemy.body.velocity.y = this.rnd.integerInRange(30, 60);
+      enemy.body.velocity.y = this.rnd.integerInRange(BasicGame.ENEMY_MIN_Y_VELOCITY, BasicGame.ENEMY_MAX_Y_VELOCITY);
       enemy.play('fly');
     }
   },
@@ -89,7 +89,7 @@ BasicGame.Game.prototype = {
 
     var bullet = this.bulletPool.getFirstExists(false);
     bullet.reset(this.player.x, this.player.y - 20);
-    bullet.body.velocity.y = -500;
+    bullet.body.velocity.y = -BasicGame.BULLET_VELOCITY;
 
     if (this.bulletPool.countDead() === 0) {
       return;å
@@ -125,7 +125,7 @@ BasicGame.Game.prototype = {
 
   setupBackground: function () {
     this.sea = this.add.tileSprite(0, 0, this.game.width, this.game.height,'sea');
-    this.sea.autoScroll(0, 12);
+    this.sea.autoScroll(0, BasicGame.SEA_SCROLL_SPEED);
   },
 
   setupPlayer: function () {
@@ -134,7 +134,7 @@ BasicGame.Game.prototype = {
     this.player.animations.add('fly', [0, 1, 2], 20, true);
     this.player.play('fly');
     this.physics.enable(this.player, Phaser.Physics.ARCADE);
-    this.player.speed = 300;
+    this.player.speed = BasicGame.PLAYER_SPEED;
     this.player.body.collideWorldBounds = true;
 
     this.player.body.setSize(20, 20, 0, -5);
@@ -155,7 +155,7 @@ BasicGame.Game.prototype = {
     });
 
     this.nextEnemyAt = 0;
-    this.enemyDelay = 1000;
+    this.enemyDelay = BasicGame.SHOT_DELAY;
 
   },
 
@@ -189,7 +189,7 @@ BasicGame.Game.prototype = {
   setupText: function () {
     this.instructions = this.add.text( this.game.width / 2, this.game.height - 100, 'Use Arrow Keys to Move, Press Z to Fire\n' + 'Tapping/clicking does both', {font: '20px monospace', fill: '#fff', align: 'center'});
     this.instructions.anchor.setTo(0.5, 0.5);
-    this.instExpire = this.time.now + 10000;
+    this.instExpire = this.time.now + BasicGame.INSTRUCTION_EXPIRE;
   },
 
   quitGame: function (pointer) {
