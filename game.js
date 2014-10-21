@@ -43,7 +43,7 @@ BasicGame.Game.prototype = {
     if (this.nextEnemyAt < this.time.now && this.enemyPool.countDead() > 0) {
       this.nextEnemyAt = this.time.now + this.enemyDelay;
       var enemy = this.enemyPool.getFirstExists(false);
-      enemy.reset(this.rnd.integerInRange(20, this.game.width - 20), 0);
+      enemy.reset(this.rnd.integerInRange(20, this.game.width - 20), 0, BasicGame.ENEMY_HEALTH);
       enemy.body.velocity.y = this.rnd.integerInRange(BasicGame.ENEMY_MIN_Y_VELOCITY, BasicGame.ENEMY_MAX_Y_VELOCITY);
       enemy.play('fly');
     }
@@ -97,16 +97,14 @@ BasicGame.Game.prototype = {
   },
 
   playerHit: function (player, enemy) {
-    this.explode(enemy);
-    enemy.kill();
+    this.damageEnemy(enemy, BasicGame.CRASH_DAMAGE);
     this.explode(player);
     player.kill();
   },
 
   enemyHit: function (bullet, enemy) {
     bullet.kill();
-    this.explode(enemy);
-    enemy.kill();
+    this.damageEnemy(enemy, BasicGame.BULLET_DAMAGE);
   },
 
   explode: function (sprite) {
@@ -153,6 +151,10 @@ BasicGame.Game.prototype = {
 
     this.enemyPool.forEach(function (enemy){
       enemy.animations.add('fly', [0, 1, 2], 20, true);
+      enemy.animations.add('hit', [3, 1, 3, 2 ], 20, false);
+      enemy.events.onAnimationComplete.add( function (e) {
+        e.play('fly');
+      }, this);
     });
 
     this.nextEnemyAt = 0;
@@ -196,6 +198,15 @@ BasicGame.Game.prototype = {
     this.scoreText = this.add.text (
       this.game.width / 2, 30, '' + this.score, { font: '20px monospace', fill: '#fff', align: 'center'});
       this.scoreText.anchor.setTo(0.5, 0.5);
+  },
+
+  damageEnemy: function (enemy, damage) {
+    enemy.damage(damage);
+    if (enemy.alive) {
+      enemy.play('hit');
+    } else {
+      this.explode(enemy);
+    }
   },
 
   quitGame: function (pointer) {
