@@ -20,6 +20,7 @@ BasicGame.Game.prototype = {
     this.setupEnemies();
     this.setupBullets();
     this.setupExplosions();
+    this.setupPlayerIcons();
     this.setupText();
 
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -79,6 +80,11 @@ BasicGame.Game.prototype = {
      if (this.instructions.exists && this.time.now > this.instExpire) {
       this.instructions.destroy();
     }
+
+    if (this.ghostUntill && this.ghostUntill < this.time.now) {
+      this.ghostUntill = null;
+      this.player.play('fly');
+    }
   },
 
   fire: function () {
@@ -97,9 +103,21 @@ BasicGame.Game.prototype = {
   },
 
   playerHit: function (player, enemy) {
+    if (this.ghostUtil && this.ghostUtill > this.time.now) {
+      return;
+    }
+
     this.damageEnemy(enemy, BasicGame.CRASH_DAMAGE);
-    this.explode(player);
-    player.kill();
+    var life = this.lives.getFirstAlive();
+
+    if (life !== null) {
+      life.kill();
+      this.ghostUntill = this.time.now + BasicGame.PLAYER_GHOST_TIME;
+      this.player.play('ghost');
+    } else {
+      this.explode(player);
+      player.kill();
+    }
   },
 
   enemyHit: function (bullet, enemy) {
@@ -130,6 +148,7 @@ BasicGame.Game.prototype = {
     this.player = this.add.sprite(this.game.width / 2, this.game.height - 50, 'player');
     this.player.anchor.setTo(0.5, 0.5);
     this.player.animations.add('fly', [0, 1, 2], 20, true);
+    this.player.animations.add('ghost', [3, 0, 3, 1], 20, true);
     this.player.play('fly');
     this.physics.enable(this.player, Phaser.Physics.ARCADE);
     this.player.speed = BasicGame.PLAYER_SPEED;
@@ -206,6 +225,22 @@ BasicGame.Game.prototype = {
       enemy.play('hit');
     } else {
       this.explode(enemy);
+      this.addToScore(enemy.reward);
+    }
+  },
+
+  addToScore: function (score) {
+    this.score += score;
+    this.scoreText.text = this.score;
+  },
+
+  setupPlayerIcons: function () {
+    this.lives = this.add.group();
+    var firstLifeIconX = this.game.width - 10 - (BasicGame.PLAYER_EXTRA_LIVES * 30);
+    for (var i = 0; i < BasicGame.PLAYER_EXTRA_LIVES; i++) {
+      var life = this.lives.create(firstLifeIconX + (30 * i), 30, 'player');
+      life.scale.setTo(0.5, 0.5);
+      life.anchor.setTo(0.5, 0.5);
     }
   },
 
