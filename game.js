@@ -40,7 +40,10 @@ BasicGame.Game.prototype = {
 
   checkCollisions: function () {
     this.physics.arcade.overlap( this.bulletPool, this.enemyPool, this.enemyHit, null, this);
+    this.physics.arcade.overlap( this.bulletPool, this.shooterPool, this.enemyHit, null, this);
     this.physics.arcade.overlap( this.player, this.enemyPool, this.playerHit, null, this);
+    this.physics.arcade.overlap( this.player, this.shooterPool, this.playerHit, null, this);
+    this.physics.arcade.overlap( this.player, this.enemyBulletPool, this.playerHit, null, this);
   },
 
   spawnEnemies: function () {
@@ -51,14 +54,16 @@ BasicGame.Game.prototype = {
       enemy.body.velocity.y = this.rnd.integerInRange(BasicGame.ENEMY_MIN_Y_VELOCITY, BasicGame.ENEMY_MAX_Y_VELOCITY);
       enemy.play('fly');
     }
+
     if (this.nextShooterAt < this.time.now && this.shooterPool.countDead() > 0) {
-      this.nextShooterAt = this.time.now + this.shoterDelay;
+      this.nextShooterAt = this.time.now + this.shooterDelay;
       var shooter = this.shooterPool.getFirstExists(false);
 
       shooter.reset(
         this.rnd.integerInRange(20, this.game.width - 20), 0, BasicGame.SHOOTER_HEALTH);
 
       var target = this.rnd.integerInRange(20, this.game.width - 20);
+
       shooter.rotation = this.physics.arcade.moveToXY(
         shooter, target, this.game.height,
         this.rnd.integerInRange(
@@ -220,13 +225,12 @@ BasicGame.Game.prototype = {
     this.shooterPool = this.add.group();
     this.shooterPool.enableBody = true;
     this.shooterPool.physicsBodyType = Phaser.Physics.ARCADE;
-    this.shooterPool.createMultiple(20, 'whiteEnemy');
+    this.shooterPool.createMultiple(50, 'whiteEnemy');
     this.shooterPool.setAll('anchor.x', 0.5);
     this.shooterPool.setAll('anchor.y', 0.5);
     this.shooterPool.setAll('outOfBoundsKill', true);
     this.shooterPool.setAll('checkWorldBounds', true);
-    this.shooterPool.setAll(
-      'reward', BasicGame.SHOOTER_REWARD, false, false, 0, true
+    this.shooterPool.setAll('reward', BasicGame.SHOOTER_REWARD, false, false, 0, true
     );
 
     // Set the animation for each sprite
@@ -245,9 +249,8 @@ BasicGame.Game.prototype = {
 
   setupBullets: function () {
     this.enemyBulletPool = this.add.group();
-    this.enemyBulletPool.enablebody = true;
+    this.enemyBulletPool.enableBody = true;
     this.enemyBulletPool.createMultiple(100, 'enemyBullet');
-    this.enemyBulletPool.setAll('anchor.x', 0.5);
     this.enemyBulletPool.setAll('anchor.x', 0.5);
     this.enemyBulletPool.setAll('anchor.y', 0.5);
     this.enemyBulletPool.setAll('outOfBoundsKill', true);
@@ -305,6 +308,7 @@ BasicGame.Game.prototype = {
   enemyFire: function() {
      this.shooterPool.forEachAlive(function (enemy) {
        if (this.time.now > enemy.nextShotAt && this.enemyBulletPool.countDead() > 0) {
+
         var bullet = this.enemyBulletPool.getFirstExists(false);
         bullet.reset(enemy.x, enemy.y);
         this.physics.arcade.moveToObject(
@@ -320,6 +324,8 @@ BasicGame.Game.prototype = {
     this.scoreText.text = this.score;
     if (this.score >= 2000) {
       this.enemyPool.destroy();
+      this.shooterPool.destroy();
+      this.enemyBulletPool.destroy();
       this.displayEnd(true);
     }
   },
